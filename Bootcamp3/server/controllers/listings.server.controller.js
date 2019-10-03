@@ -3,7 +3,7 @@
 var mongoose = require('mongoose'), 
     Listing = require('../models/listings.server.model.js'),
     coordinates = require('./coordinates.server.controller.js');
-    
+var util = require('util');    
 /*
   In this file, you should use Mongoose queries in order to retrieve/add/remove/update listings.
   On an error you should send a 404 status code, as well as the error message. 
@@ -55,13 +55,48 @@ exports.read = function(req, res) {
 
 /* Update a listing - note the order in which this function is called by the router*/
 exports.update = function(req, res) {
-  var listing = req.listing;
+  
+    var listing = req.listing;
+    var bodylist = new Listing(req.body);
+    var query = {code : listing.code};
+    var update = {
 
-  /* Replace the listings's properties with the new properties found in req.body */
- 
-  /*save the coordinates (located in req.results if there is an address property) */
- 
-  /* Save the listing */
+          name : bodylist.name,
+          code : bodylist.code,
+          address : bodylist.address
+
+        };
+      
+    if(req.results) {
+          bodylist.coordinates = {
+
+           latitude: req.results.lat, 
+            longitude: req.results.lng
+    
+         };
+
+
+          update.coordinates = bodylist.coordinates;
+        }
+      
+        Listing.updateOne(query,update, 
+          function (err, result) {
+              if (err) throw err;
+          });
+      
+
+        Listing.findOne({code: bodylist.code})
+        .then(result => { 
+
+          res.send(result);
+
+        }).catch(err => {
+
+          res.status(400).send({
+
+              message: err.message || "Update location failed"
+          });
+        });
 
 };
 
@@ -69,13 +104,52 @@ exports.update = function(req, res) {
 exports.delete = function(req, res) {
   var listing = req.listing;
 
-  /* Add your code to remove the listins */
+    Listing.deleteOne({
+
+
+          code: listing.code
+        }, function (err, result) {
+          if (err)
+
+              res.send(err);
+
+          res.json({
+
+              status: "Success",
+              message: 'Listing deleted'
+
+          });
+        });
 
 };
 
 /* Retreive all the directory listings, sorted alphabetically by listing code */
 exports.list = function(req, res) {
-  /* Add your code */
+
+    Listing.find({}, function(err, locations) {
+          if (err) throw err;
+          
+          
+
+
+          locations.sort( (a,b) => (a.code > b.code) ? 1 : -1);
+      
+  
+
+
+          
+        }).then(locations => { 
+
+
+          res.send(locations);
+        }).catch(err => {
+
+          res.status(400).send({
+
+              message: err.message || "Error occurred retrieving locations"
+
+          });
+        });
 };
 
 /* 

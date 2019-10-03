@@ -1,5 +1,6 @@
 var config = require('../config/config'), 
     request = require('request');
+const opencage = require('opencage-api-client');
 
 
 
@@ -23,7 +24,34 @@ module.exports = function(req, res, next) {
       qs: options
       }, function(error, response, body) {
         //For ideas about response and error processing see https://opencagedata.com/tutorials/geocode-in-nodejs
-        
+               opencage.geocode(options).then(data => {
+      
+                if (data.status.code == 200) {
+
+                  if (data.results.length > 0) {
+
+                    var place = data.results[0];
+                    req.results = place.geometry;
+
+                  }
+
+
+                } else if (data.status.code == 402) {
+
+
+                    console.log('daily limit');
+                  
+                } else {
+                  
+
+
+                    console.log('error', data.status.message);
+                }
+                next();
+              }).catch(error => {
+                console.log('error', error.message);
+                      
+          //JSON.parse to get contents. Remember to look at the response's JSON format in open cage data            });
         //JSON.parse to get contents. Remember to look at the response's JSON format in open cage data
         
         /*Save the coordinates in req.results -> 
