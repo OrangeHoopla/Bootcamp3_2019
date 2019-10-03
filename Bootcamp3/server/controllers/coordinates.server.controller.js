@@ -50,6 +50,8 @@ module.exports = function(req, res, next) {
                 next();
               }).catch(error => {
                 console.log('error', error.message);
+
+                });
                       
           //JSON.parse to get contents. Remember to look at the response's JSON format in open cage data            });
         //JSON.parse to get contents. Remember to look at the response's JSON format in open cage data
@@ -61,7 +63,7 @@ module.exports = function(req, res, next) {
           Assumption: if we get a result we will take the coordinates from the first result returned
         */
         //  req.results = stores you coordinates
-        next();
+        
     });
   } else {
     next();
